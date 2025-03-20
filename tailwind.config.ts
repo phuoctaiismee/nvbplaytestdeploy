@@ -1,4 +1,4 @@
-import type {Config} from "tailwindcss";
+import type { Config } from "tailwindcss";
 
 export default {
   darkMode: ["class"],
@@ -13,6 +13,9 @@ export default {
       container: {
         screens: {
           lg: "1200px",
+        },
+        padding: {
+          DEFAULT: "1rem",
         },
         center: true,
       },
@@ -97,8 +100,8 @@ export default {
       },
       keyframes: {
         "text-shimmer": {
-          from: {backgroundPosition: "0 0"},
-          to: {backgroundPosition: "-200% 0"},
+          from: { backgroundPosition: "0 0" },
+          to: { backgroundPosition: "-200% 0" },
         },
         shimmer: {
           "100%": {
@@ -158,7 +161,7 @@ export default {
       nocompatible: true,
     }),
     require("@tailwindcss/typography"),
-    function ({addComponents}: any) {
+    function ({ addComponents }: any) {
       addComponents({
         ".text-16-24-600": {
           fontSize: "16px", // custom text size

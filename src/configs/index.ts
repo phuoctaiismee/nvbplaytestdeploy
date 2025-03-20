@@ -1053,27 +1053,27 @@ export const COMMON_DATA = {
     {
       id: 1,
       name: "best_seller",
-      value: "best-seller",
+      value: "bestSeller",
     },
     {
       id: 2,
       name: "price_low_to_high",
-      value: "price-asc",
+      value: "priceAsc",
     },
     {
       id: 3,
       name: "price_high_to_low",
-      value: "price-desc",
+      value: "priceDesc",
     },
     {
       id: 4,
       name: "newest",
-      value: "newest",
+      value: "newArrival",
     },
     {
       id: 5,
       name: "deep_discount",
-      value: "deep_discount",
+      value: "percentDiscountÏ",
     },
   ],
   sort_by: [
@@ -1205,8 +1205,7 @@ export const META_DATA = {
   title: "NVBPlay - Showroom Đồ Thể Thao Cầu Lông & Pickleball Chính Hãng",
   description:
     "NVBPlay chuyên cung cấp đồ cầu lông và pickleball cao cấp, từ vợt, giày, đến phụ kiện chính hãng. Nâng cao trải nghiệm của bạn tại NVBPlay.",
-  image:
-    "/nvbplay_logo.png",
+  image: "/nvbplay_logo.png",
   keywords: [
     "NVBPlay",
     "cầu lông",

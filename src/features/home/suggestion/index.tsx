@@ -24,6 +24,7 @@ import useGetCategoriesQuery from "@/hooks/queries/categories/useGetCategoriesQu
 import useSearchFilter from "@/hooks/useSearchFilter";
 import { FilterOption } from "@/stores/search-slice";
 import { useRouter } from "next/navigation";
+import Bounded from "@/components/base-components/containers/bounded";
 const SuggestionFeature = () => {
   const [width, height] = useWindowSize();
   const router = useRouter();
@@ -53,8 +54,8 @@ const SuggestionFeature = () => {
       </div>
     );
   return (
-    <>
-      <FadeUpMotionLayout>
+    <div className="py-4 lg:py-6">
+      <div>
         <div
           className={cn(
             "flex flex-col gap-2 bg-white max-h-[19.75rem] h-full overflow-hidden rounded-lg"
@@ -149,8 +150,8 @@ const SuggestionFeature = () => {
             />
           </div>
         </div>
-      </FadeUpMotionLayout>
-      <FadeUpMotionLayout>
+      </div>
+      <Bounded className="py-4">
         <div
           className={cn(
             "grid grid-cols-2 sm:grid-cols-3 desktop:grid-cols-5 gap-[12.5px]"
@@ -160,14 +161,14 @@ const SuggestionFeature = () => {
             ?.slice(0, productsList?.length)
             .map((item, index) => <ProductCard key={index} {...item} />)}
         </div>
-      </FadeUpMotionLayout>
+      </Bounded>
       {isFetching && (
         <div className="w-full flex justify-center">
           <LoadingDots color="text-red-600" />
         </div>
       )}
       {!isLastPage && !isFetching && (
-        <div className="flex justify-center">
+        <div className="flex justify-center mt-4">
           <Button
             onClick={handleNext}
             className=" text-14-21-600 text-red-primary  border-red-primary hover:text-red-primary"
@@ -177,7 +178,7 @@ const SuggestionFeature = () => {
           </Button>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

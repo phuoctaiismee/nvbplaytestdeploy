@@ -55,19 +55,25 @@ const ProductCarousel = () => {
   const renderProductItems = () =>
     products.map((item, index) => {
       const discountPercent =
-        ((item.variant?.calculated_price?.original_amount - item.amount) /
-          item.variant?.calculated_price?.original_amount) *
+        ((item.price_set.variant?.calculated_price?.original_amount - item.amount) /
+          item.price_set.variant?.calculated_price?.original_amount) *
         100;
 
-      const isOutOfStock =
+        const isOutOfStock =
         item.is_out_of_stock ||
         item.availability <= 0 ||
         item.availability === null ||
-        item.stocked_quantity - item.reserved_quantity <= 0;
+        item.price_set.variant.inventory_items[0].inventory.location_levels
+          .length <= 0 ||
+        item.price_set.variant?.inventory_items?.[0].inventory
+          ?.location_levels?.[0]?.stocked_quantity -
+          item.price_set.variant?.inventory_items?.[0].inventory
+            ?.location_levels?.[0]?.reserved_quantity <=
+          0;
 
       const stockQuantity = item.availability
         ? item.availability
-        : (item.stocked_quantity || 0) - (item.reserved_quantity || 0);
+        : (item.price_set.variant?.inventory_items[0]?.inventory.location_levels[0]?.stocked_quantity || 0) - (item.price_set.variant?.inventory_items[0]?.inventory.location_levels[0]?.reserved_quantity || 0);
 
       return (
         <CarouselItem
@@ -75,15 +81,15 @@ const ProductCarousel = () => {
           className="basis-1/2 md:basis-1/3 desktop:basis-1/5"
         >
           <Link
-            href={`/products/${item?.variant?.product?.handle}?variantId=${item?.variant?.id}`}
+            href={`/products/${item?.price_set.variant?.product?.handle}?variantId=${item?.price_set.variant?.id}`}
             className={cn("flex flex-col items-center group")}
           >
             <div className="relative">
               <div>
                 <Image
                   src={
-                    item.variant?.metadata?.thumbnail ||
-                    item.variant?.product.thumbnail
+                    item.price_set.variant?.metadata?.thumbnail ||
+                    item.price_set.variant?.product.thumbnail
                   }
                   className={cn(
                     "aspect-square rounded-lg border-2 border-[#FF424E]",
@@ -122,7 +128,7 @@ const ProductCarousel = () => {
             </div>
             <div className="p-4 w-full flex flex-col gap-3 select-none">
               <div className="text-sm group-hover:text-primary transition-colors duration-300 cursor-pointer line-clamp-2 font-medium text-[#27272A]">
-                {item.variant.title}
+                {item.price_set.variant.title}
               </div>
               <div>
                 <p className="text-base text-[#FF3F1A] font-bold">
@@ -130,7 +136,7 @@ const ProductCarousel = () => {
                 </p>
                 <p className="text-xs text-[#515158] line-through font-medium">
                   {FormatCurrency(
-                    item.variant.calculated_price.original_amount
+                    item.price_set.variant.calculated_price.original_amount
                   )}
                 </p>
               </div>

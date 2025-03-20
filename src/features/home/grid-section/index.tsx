@@ -3,13 +3,14 @@ import { Content } from "@prismicio/client";
 import { PrismicNextImage } from "@prismicio/next";
 import dynamic from "next/dynamic";
 import Feed from "./components/feed";
+import Bounded from "@/components/base-components/containers/bounded";
 const Carousel = dynamic(() => import("./components/carousel"));
 type GridSectionProps = {
   slice: Content.GridSectionsSlice;
 };
 const GridSectionContainer = ({ slice }: GridSectionProps) => {
   return (
-    <>
+    <Bounded className="py-4">
       {slice.variation === "default" && (
         <div
           className={cn(
@@ -47,10 +48,8 @@ const GridSectionContainer = ({ slice }: GridSectionProps) => {
           ))}
         </div>
       )}
-      {slice.variation === "gridSection3" && (
-        <Feed/>
-      )}
-    </>
+      {slice.variation === "gridSection3" && <Feed />}
+    </Bounded>
   );
 };
 

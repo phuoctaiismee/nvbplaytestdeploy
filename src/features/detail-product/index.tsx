@@ -1,3 +1,4 @@
+import Bounded from "@/components/base-components/containers/bounded";
 import BannerContainer from "./components/banner-container";
 import DescriptionContainer from "./components/description/description-container";
 import MainContainer from "./components/main-container";
@@ -6,8 +7,8 @@ import MainContainer from "./components/main-container";
 
 const DetailProduct = () => {
   return (
-    <main>
-      <div className="container md:py-10 py-[16px] md:px-0 px-[16px]">
+    <main className="overflow-hidden">
+      <Bounded className="md:py-6 py-4">
         <div className="rounded-lg px-4 py-3 bg-white">
           <MainContainer />
         </div>
@@ -21,7 +22,7 @@ const DetailProduct = () => {
           <RecommendProducts />
         </div> */}
         <BannerContainer />
-      </div>
+      </Bounded>
     </main>
   );
 };

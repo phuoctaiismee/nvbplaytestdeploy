@@ -25,9 +25,9 @@ const DealFeatures = ({ slice }: DealFeatuesType) => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (isSuccess && priceList && priceList.length > 0) {
-      dispatch(setPriceList(priceList));
-      dispatch(setActive(priceList[0].id));
+    if (isSuccess && priceList && priceList.price_lists.length > 0) {
+      dispatch(setPriceList(priceList.price_lists));
+      dispatch(setActive(priceList.price_lists[0].id));
     }
   }, [isSuccess, priceList, dispatch]);
 
@@ -49,13 +49,13 @@ const DealFeatures = ({ slice }: DealFeatuesType) => {
   if (
     isSuccess &&
     priceList &&
-    priceList.length > 0 &&
-    priceList[0]?.prices?.length > 0
+    priceList.price_lists.length > 0 &&
+    priceList.price_lists[0]?.prices?.length > 0
   ) {
-    const deal = priceList.find(
+    const deal =  priceList.price_lists.find(
       (item) =>
         item.id === active &&
-        item.status === "active" &&
+        // item.status === "active" &&
         isAfter(item.ends_at, new Date())
     );
     if (deal) {
@@ -63,7 +63,7 @@ const DealFeatures = ({ slice }: DealFeatuesType) => {
         <Bounded
           data-slice-type={slice?.slice_type!}
           data-slice-variation={slice?.variation!}
-          className="!px-0"
+          className="!px-0 py-4 lg:py-6"
         >
           <div className={cn("relative flex flex-col rounded-lg bg-[#020203]")}>
             <TagBanner title={slice.primary.title} />

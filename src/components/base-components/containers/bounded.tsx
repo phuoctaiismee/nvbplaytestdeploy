@@ -16,7 +16,7 @@ const Bounded = ({
     <Component
       {...restProps}
       className={cn(
-        "w-full max-w-screen-desktop mx-auto px-0 desktop:px-0",
+        "w-full max-w-screen-desktop mx-auto container desktop:px-0",
         className
       )}
     >

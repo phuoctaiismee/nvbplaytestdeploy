@@ -1,5 +1,6 @@
 "use client";
 import ProductCard from "@/components/base-components/cards/product-card";
+import Bounded from "@/components/base-components/containers/bounded";
 import ProductCardSkeleton from "@/components/base-components/skeletons/product-card-skeleton";
 import { toastNVB } from "@/components/base-components/toast";
 import Heading from "@/components/base-components/typography/heading";
@@ -69,7 +70,7 @@ const ProductFeature = ({ slice }: ProductFeatureType) => {
   }
 
   return (
-    <>
+    <Bounded className="py-4">
       {slice.variation === "default" &&
         newCollection?.products &&
         newCollection?.products?.length > 0 && (
@@ -142,7 +143,7 @@ const ProductFeature = ({ slice }: ProductFeatureType) => {
             </Carousel>
           </div>
         )}
-    </>
+    </Bounded>
   );
 };
 

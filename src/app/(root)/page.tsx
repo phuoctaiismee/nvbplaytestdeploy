@@ -9,9 +9,9 @@ export default async function Page() {
   const page = await client.getSingle("homepage");
 
   return (
-    <ContainerLayout>
+    // <ContainerLayout>
       <SliceZone slices={page.data.slices} components={components} />
-    </ContainerLayout>
+    // </ContainerLayout>
   );
 }
 

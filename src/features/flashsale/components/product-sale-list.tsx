@@ -1,32 +1,91 @@
 "use client";
 import Image from "@/components/base-components/images/image";
 import IconCustom from "@/components/common-components/icon-custom";
-import {Badge} from "@/components/ui/badge";
-import {Button} from "@/components/ui/button";
-import {FormatCurrency} from "@/utilities/text";
-import {cn} from "@/lib/utils";
-import {useDispatch, useSelector} from "react-redux";
-import {RootState} from "@/stores";
-import {useEffect, useMemo} from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { FormatCurrency } from "@/utilities/text";
+import { cn } from "@/lib/utils";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/stores";
+import { useEffect, useMemo } from "react";
 import Link from "next/link";
 import {
   setProductAvailability,
   setProductOutofStock,
 } from "@/stores/datas/price-list";
-import {getAblyChannel} from "@/utilities/ably";
-import {OutOfStockEvent} from "@/utilities/ably/type";
+import { getAblyChannel } from "@/utilities/ably";
+import { OutOfStockEvent } from "@/utilities/ably/type";
 import HeartActionWishList from "@/components/base-components/cards/heart-action";
 
 const ProductSaleList = () => {
   const dispatch = useDispatch();
-  const {priceList, active} = useSelector(
+  const { priceList, active, activeCategory, filterKey } = useSelector(
     (state: RootState) => state.price_list
   );
 
-  const products = useMemo(
-    () => priceList?.find((item) => item.id === active)?.prices || [],
-    [priceList, active]
-  );
+  const products = useMemo(() => {
+    const activePriceList = priceList?.find((item) => item.id === active);
+    if (!activePriceList || !activePriceList.prices) return [];
+
+    const availableCategories = activePriceList.categories.map((c) => c.handle);
+
+    // Nếu activeCategory không hợp lệ hoặc là "all", hiển thị toàn bộ products
+    let filteredProducts =
+      !activeCategory ||
+      activeCategory === "all" ||
+      !availableCategories.includes(activeCategory)
+        ? activePriceList.prices
+        : activePriceList.prices.filter((price) =>
+            price.price_set.variant.product.categories.some(
+              (category) => category.handle === activeCategory
+            )
+          );
+
+    // Áp dụng bộ lọc theo filterKey
+    if (filterKey) {
+      filteredProducts = [...filteredProducts].sort((a, b) => {
+        const variantA = a.price_set.variant;
+        const variantB = b.price_set.variant;
+
+        switch (filterKey) {
+          case "bestSeller": {
+            const reservedA = variantA.inventory_items.reduce(
+              (sum, item) =>
+                sum +
+                (item.inventory.location_levels?.[0]?.reserved_quantity || 0),
+              0
+            );
+            const reservedB = variantB.inventory_items.reduce(
+              (sum, item) =>
+                sum +
+                (item.inventory.location_levels?.[0]?.reserved_quantity || 0),
+              0
+            );
+            return reservedB - reservedA; // Sắp xếp giảm dần
+          }
+
+          case "newArrival":
+            return (
+              new Date(b.created_at).getTime() -
+              new Date(a.created_at).getTime()
+            ); // Sản phẩm mới trước
+
+          case "priceAsc":
+            return a.amount - b.amount; // Giá thấp trước
+
+          case "priceDesc":
+            return b.amount - a.amount; // Giá cao trước
+
+          case "percentDiscount":
+            return b.discount_percentage - a.discount_percentage;
+          default:
+            return 0;
+        }
+      });
+    }
+
+    return filteredProducts;
+  }, [priceList, active, activeCategory, filterKey]);
 
   useEffect(() => {
     const channel = getAblyChannel("product_outofstock:deal");
@@ -35,7 +94,7 @@ const ProductSaleList = () => {
       if (productOutofStock.data.length > 0) {
         productOutofStock.data.forEach((item) => {
           if (item.availability <= 0) {
-            dispatch(setProductOutofStock({variantId: item.id}));
+            dispatch(setProductOutofStock({ variantId: item.id }));
           } else {
             dispatch(
               setProductAvailability({
@@ -53,19 +112,29 @@ const ProductSaleList = () => {
     <>
       {products?.map((item, index) => {
         const discountPercent =
-          ((item.variant?.calculated_price?.original_amount - item.amount) /
-            item.variant?.calculated_price?.original_amount) *
+          ((item.price_set?.variant.calculated_price?.original_amount -
+            item.amount) /
+            item.price_set.variant?.calculated_price?.original_amount) *
           100;
 
         const isOutOfStock =
           item.is_out_of_stock ||
           item.availability <= 0 ||
           item.availability === null ||
-          item.stocked_quantity - item.reserved_quantity <= 0;
+          item.price_set.variant.inventory_items[0].inventory.location_levels
+            .length <= 0 ||
+          item.price_set.variant?.inventory_items?.[0].inventory
+            ?.location_levels?.[0]?.stocked_quantity -
+            item.price_set.variant?.inventory_items?.[0].inventory
+              ?.location_levels?.[0]?.reserved_quantity <=
+            0;
 
         const stockQuantity = item.availability
           ? item.availability
-          : (item.stocked_quantity || 0) - (item.reserved_quantity || 0);
+          : (item.price_set.variant?.inventory_items?.[0]?.inventory
+              ?.location_levels?.[0]?.stocked_quantity || 0) -
+            (item.price_set.variant?.inventory_items?.[0]?.inventory
+              ?.location_levels?.[0]?.reserved_quantity || 0);
 
         return (
           <div
@@ -78,8 +147,8 @@ const ProductSaleList = () => {
             <div className="relative">
               <Image
                 src={
-                  item.variant?.metadata?.thumbnail ||
-                  item.variant?.product.thumbnail
+                  item.price_set.variant?.metadata?.thumbnail ||
+                  item.price_set.variant?.product.thumbnail
                 }
                 className={cn(
                   "aspect-square rounded-lg border-2 border-primary",
@@ -97,7 +166,7 @@ const ProductSaleList = () => {
                     -{discountPercent.toFixed(0)}%
                   </span>
                 </div>
-                <HeartActionWishList id={item.variant_id || ""} />
+                <HeartActionWishList id={item.price_set.variant.id || ""} />
               </div>
               {isOutOfStock && (
                 <div className="absolute inset-0 flex items-center justify-center h-full w-full">
@@ -111,10 +180,10 @@ const ProductSaleList = () => {
             </div>
             <div className="p-4 w-full flex flex-col gap-3">
               <Link
-                href={`/products/${item.variant.product.handle}`}
+                href={`/products/${item.price_set.variant.product.handle}?variantId=${item.price_set.variant.id}`}
                 className="text-sm hover:text-primary cursor-pointer line-clamp-2"
               >
-                {item.variant.title}
+                {item.price_set.variant.title}
               </Link>
               <div>
                 <p className="text-base text-primary font-semibold">
@@ -122,7 +191,7 @@ const ProductSaleList = () => {
                 </p>
                 <p className="text-xs text-muted-foreground line-through">
                   {FormatCurrency(
-                    item.variant.calculated_price.original_amount
+                    item.price_set.variant.calculated_price.original_amount
                   )}
                 </p>
               </div>

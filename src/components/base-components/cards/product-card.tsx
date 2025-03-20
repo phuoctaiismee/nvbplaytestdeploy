@@ -1,14 +1,20 @@
 "use client";
-import {FormatCurrency} from "@/utilities/text";
-import {Button} from "@/components/ui/button";
+import { FormatCurrency } from "@/utilities/text";
+import { Button } from "@/components/ui/button";
 import IconCustom from "@/components/common-components/icon-custom";
-import {useMemo, useState} from "react";
-import {Rating} from "../rating/rating";
-import {cn} from "@/lib/utils";
-import {Product as ProductType} from "@/services/products/type";
+import { useEffect, useMemo, useState } from "react";
+import { Rating } from "../rating/rating";
+import { cn } from "@/lib/utils";
+import { Product as ProductType } from "@/services/products/type";
 import Link from "next/link";
 import NextImage from "../images/next-image";
 import HeartActionWishList from "./heart-action";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 interface Product extends ProductType {
   withBoder?: boolean;
@@ -19,6 +25,7 @@ interface Product extends ProductType {
 const ProductCard = ({
   id,
   images,
+  thumbnail,
   withBoder,
   title,
   withButton = false,
@@ -27,10 +34,29 @@ const ProductCard = ({
   handle,
   variants,
   sales_channels,
+  options,
 }: Product) => {
-  const [activeVariant, setactiveVariant] = useState(
-    variants && variants.length > 0 ? variants[0] : null
-  );
+  //   const [activeVariant, setactiveVariant] = useState(
+  //     variants && variants.length > 0 ? variants[0] : null
+  //   );
+  const [selectedOptions, setSelectedOptions] = useState<
+    Record<string, string>
+  >({});
+  const isMobile = useMediaQuery("(max-width: 1200px)");
+
+  const activeVariant = useMemo(() => {
+    if (!variants || !options) return null;
+
+    // Kiểm tra nếu tất cả option đã được chọn
+    if (Object.keys(selectedOptions).length !== options.length) return null;
+
+    return variants.find((variant) =>
+      variant.options?.every(
+        (optionValue) =>
+          selectedOptions[optionValue.option_id!] === optionValue.id
+      )
+    );
+  }, [selectedOptions, variants, options]);
 
   const isSale =
     activeVariant?.calculated_price?.calculated_price?.price_list_type ===
@@ -74,6 +100,22 @@ const ProductCard = ({
     }, 0);
   }, [activeVariant]);
 
+  //Khởi tạo option đầu tiền
+  useEffect(() => {
+    if (variants && variants.length > 0 && options) {
+      const initialOptions: Record<string, string> = {};
+
+      options.forEach((option) => {
+        const firstValue = option.values[0]; // Lấy giá trị đầu tiên của mỗi option
+        if (firstValue) {
+          initialOptions[option.id] = firstValue.id; // Gán giá trị mặc định
+        }
+      });
+
+      setSelectedOptions(initialOptions);
+    }
+  }, [variants, options]);
+
   return (
     <div
       className={cn(
@@ -89,7 +131,7 @@ const ProductCard = ({
             href={`/products/${handle}?variantId=${activeVariant?.id}`}
             className="w-full h-full"
           >
-            <NextImage url={images[0]?.url.toString()} />
+            <NextImage url={thumbnail ? thumbnail : images[0]?.url.toString()} />
           </Link>
         </div>
         <div className="absolute w-full top-0 inset-x-0 flex pt-3 px-4 items-center justify-between">
@@ -111,6 +153,102 @@ const ProductCard = ({
           <HeartActionWishList id={activeVariant?.id || ""} />
         </div>
       </div>
+      {options?.length > 0 &&
+        (() => {
+          const firstOption = options[0]; // Lấy option đầu tiên
+          if (!firstOption) return null;
+
+          const visibleValues = firstOption.values.slice(0, isMobile ? 2 : 3);
+          const maxVisible = isMobile ? 2 : 3;
+          const hiddenCount =
+            firstOption.values.length > maxVisible
+              ? firstOption.values.length - maxVisible
+              : 0;
+
+          return (
+            <ul className="w-full py-2 px-4 flex flex-wrap lg:flex-nowrap gap-2">
+              {visibleValues.map(({ id, value }) => (
+                <Button
+                  key={id}
+                  size="sm"
+                  className={cn(
+                    "aspect-square text-[10px] px-2 py-0.5 font-light",
+                    {
+                      "border border-green-primary":
+                        selectedOptions[firstOption.id] === id,
+                    }
+                  )}
+                  variant={
+                    selectedOptions[firstOption.id] === id ? "ghost" : "outline"
+                  }
+                  onClick={() => {
+                    setSelectedOptions((prev) => ({
+                      ...prev,
+                      [firstOption.id]: id,
+                    }));
+                  }}
+                >
+                  {value}
+                </Button>
+              ))}
+
+              {hiddenCount > 0 && (
+                <HoverCard>
+                  <HoverCardTrigger asChild>
+                    <Button
+                      size="sm"
+                      className="aspect-square text-[10px] px-2 py-0.5 font-light bg-gray-100"
+                      variant="outline"
+                    >
+                      +{hiddenCount}
+                    </Button>
+                  </HoverCardTrigger>
+                  <HoverCardContent>
+                    <ul className="flex flex-col justify-start gap-3">
+                      {options.map((option) => (
+                        <li key={option.id} className="flex flex-col gap-1.5">
+                          <h3 className="text-xs font-medium">
+                            {option.title}
+                          </h3>
+                          <div className="flex flex-wrap gap-2">
+                            {option.values.map((optionValue) => (
+                              <Button
+                                key={optionValue.id}
+                                size="sm"
+                                className={cn(
+                                  "aspect-square text-[10px] px-2 py-0.5 font-light",
+                                  {
+                                    "border border-green-primary":
+                                      selectedOptions[option.id] ===
+                                      optionValue.id,
+                                  }
+                                )}
+                                variant={
+                                  selectedOptions[option.id] === optionValue.id
+                                    ? "ghost"
+                                    : "outline"
+                                }
+                                onClick={() => {
+                                  setSelectedOptions((prev) => ({
+                                    ...prev,
+                                    [option.id]: optionValue.id,
+                                  }));
+                                }}
+                              >
+                                {optionValue.value}
+                              </Button>
+                            ))}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </HoverCardContent>
+                </HoverCard>
+              )}
+            </ul>
+          );
+        })()}
+
       <Link
         href={`/products/${handle}?variantId=${activeVariant?.id}`}
         className="p-4 w-full h-full flex flex-col items-start justify-between gap-3"
@@ -151,16 +289,17 @@ const ProductCard = ({
             <p className="text-xs text-[#515158] font-medium line-clamp-1">
               Đã bán {totalSold || 0}
             </p>
-            {disabled ? (
+            {/* {disabled ? (
               <p className="text-xs text-red-500">Hết hàng</p>
             ) : (
               <p className="flex items-end gap-1 text-xs text-[#079449]">
                 <IconCustom icon="tabler:building-store" className="size-4" />
                 <span>Kho: {totalStock || 0}</span>
               </p>
-            )}
+            )} */}
           </div>
         </div>
+
         {withButton && (
           <Button
             onClick={(e) => onClick && onClick(e, activeVariant?.id || "")}

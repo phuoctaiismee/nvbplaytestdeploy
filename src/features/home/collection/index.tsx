@@ -3,12 +3,13 @@ import CarouselCollection from "./components/carousel";
 import ImageCollection from "./components/images";
 import ProductCollection from "./components/products";
 import { cn } from "@/lib/utils";
+import Bounded from "@/components/base-components/containers/bounded";
 // import { FadeUpMotionLayout } from "@/layouts/component-layouts";
 
 const CollectionFeature = () => {
   return (
     // <FadeUpMotionLayout>
-      <div className={cn("flex flex-col gap-8")}>
+      <Bounded className={cn("flex flex-col gap-8")}>
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <Heading>Bộ sưu tập</Heading>
@@ -27,7 +28,7 @@ const CollectionFeature = () => {
             <ProductCollection />
           </div>
         </div>
-      </div>
+      </Bounded>
     // </FadeUpMotionLayout>
   );
 };

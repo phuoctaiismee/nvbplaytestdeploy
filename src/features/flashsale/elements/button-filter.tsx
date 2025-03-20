@@ -16,7 +16,7 @@ export const ButtonFilter: FC<ButtonFilterProps> = ({
   reverse,
   className,
   active,
-  activeClass = "text-txtthird ",
+  activeClass = "text-primary",
   ...props
 }) => {
   return (
@@ -25,8 +25,8 @@ export const ButtonFilter: FC<ButtonFilterProps> = ({
       className={cn(
         "flex items-center cursor-pointer",
         reverse && "flex-row-reverse",
+        className,
         active && activeClass,
-        className
       )}
     >
       <span className="text-sm font-medium text-nowrap">{label}</span>

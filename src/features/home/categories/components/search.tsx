@@ -23,7 +23,11 @@ const SearchSection = () => {
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    dispatch(setSearchKeyword(searchKeyword));
+    dispatch(
+      setSearchKeyword(
+        searchKeyword !== "" ? searchKeyword : "Vợt cầu lông Li-ning giá ưu đãi"
+      )
+    );
     Cookies.set("searchProduct", searchKeyword, { expires: 365 });
     router.push(`/products`);
   };

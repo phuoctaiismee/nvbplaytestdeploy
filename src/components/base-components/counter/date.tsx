@@ -1,11 +1,12 @@
-"use client"; // Ensure this runs on the client side
+"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { useAnimate } from "framer-motion";
 
 type CountdownProps = {
-  targetDate: string; // The target date to countdown to
+  targetDate: string;
   withUnit?: boolean;
+  format?: "DD:HH:MM:SS" | "DD:HH:MM" | "HH:MM:SS" | "HH:MM";
 };
 
 const SECOND = 1000;
@@ -13,40 +14,36 @@ const MINUTE = SECOND * 60;
 const HOUR = MINUTE * 60;
 const DAY = HOUR * 24;
 
+const UNITS = {
+  DD: { label: "days", unit: "Day" },
+  HH: { label: "hours", unit: "Hour" },
+  MM: { label: "minutes", unit: "Minute" },
+  SS: { label: "seconds", unit: "Second" },
+};
+
 const Countdown: React.FC<CountdownProps> = ({
   targetDate,
   withUnit = false,
+  format = "DD:HH:MM:SS",
 }) => {
+  const formatUnits = format
+    .split(":")
+    .map((key) => UNITS[key as keyof typeof UNITS]);
+
   return (
     <div className="p-4">
       <div className="mx-auto flex gap-1 desktop:gap-2 w-full max-w-5xl items-center bg-white">
-        <CountdownItem
-          targetDate={targetDate}
-          unit="Day"
-          text="days"
-          withUnit={withUnit}
-        />
-        <span>:</span>
-        <CountdownItem
-          targetDate={targetDate}
-          unit="Hour"
-          text="hours"
-          withUnit={withUnit}
-        />
-        <span>:</span>
-        <CountdownItem
-          targetDate={targetDate}
-          unit="Minute"
-          text="minutes"
-          withUnit={withUnit}
-        />
-        <span>:</span>
-        <CountdownItem
-          targetDate={targetDate}
-          unit="Second"
-          text="seconds"
-          withUnit={withUnit}
-        />
+        {formatUnits.map((item, index) => (
+          <div key={item.unit} className="flex items-center">
+            {index > 0 && <span className="mx-1">:</span>}
+            <CountdownItem
+              targetDate={targetDate}
+              unit={item.unit as "Day" | "Hour" | "Minute" | "Second"}
+              text={item.label}
+              withUnit={withUnit}
+            />
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -99,20 +96,15 @@ const useTimer = (
       const distance = Math.max(0, end.getTime() - now.getTime());
 
       let newTime = 0;
-
-      if (unit === "Day") {
-        newTime = Math.floor(distance / DAY);
-      } else if (unit === "Hour") {
-        newTime = Math.floor((distance % DAY) / HOUR);
-      } else if (unit === "Minute") {
+      if (unit === "Day") newTime = Math.floor(distance / DAY);
+      else if (unit === "Hour") newTime = Math.floor((distance % DAY) / HOUR);
+      else if (unit === "Minute")
         newTime = Math.floor((distance % HOUR) / MINUTE);
-      } else if (unit === "Second") {
+      else if (unit === "Second")
         newTime = Math.floor((distance % MINUTE) / SECOND);
-      }
 
       if (newTime !== timeRef.current) {
         if (ref.current) {
-          // Exit animation
           await animate(
             ref.current,
             { y: ["0%", "-50%"], opacity: [1, 0] },
@@ -124,7 +116,6 @@ const useTimer = (
         setTime(newTime);
 
         if (ref.current) {
-          // Enter animation
           await animate(
             ref.current,
             { y: ["50%", "0%"], opacity: [0, 1] },
@@ -134,14 +125,11 @@ const useTimer = (
       }
     };
 
-    // Start the interval
     intervalRef.current = setInterval(updateCountdown, 1000);
-    updateCountdown(); // Run immediately to initialize
+    updateCountdown();
 
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [targetDate, unit, animate, ref]);
 

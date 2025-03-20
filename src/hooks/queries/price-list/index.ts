@@ -14,17 +14,13 @@ export const usePriceList = () => {
   const params = removeEmptyKeys({
     "sales_channels_ids[]": selectedSaleChannel.map((i) => i.value).join(","),
   });
-  const { data, isLoading, error, ...rest } = useQuery<
-    IResponse<{
-      price_lists: PriceList[];
-    }>
-  >({
+  const { data, isLoading, error, ...rest } = useQuery({
     queryKey: ["price-list", selectedSaleChannel],
     queryFn: () => getPricelist(params),
   });
 
   return {
-    data: data?.data?.data?.price_lists || [],
+    data: data?.data.data,
     isLoading,
     error,
     ...rest,

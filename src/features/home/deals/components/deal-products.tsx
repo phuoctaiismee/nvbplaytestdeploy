@@ -1,4 +1,3 @@
-import Countdown from "@/components/base-components/counter/date";
 import { RootState } from "@/stores";
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
@@ -6,6 +5,8 @@ import ProductCarousel from "./product-carousel";
 import TabDeal from "./tab";
 import { FadeUpMotionLayout } from "@/layouts/component-layouts";
 import { isAfter } from "date-fns";
+import CountdownBox from "@/components/base-components/counter/countdown";
+import Countdown from "@/components/base-components/counter/date";
 
 const DealProducts = () => {
   const { priceList, active } = useSelector(
@@ -35,7 +36,7 @@ const DealProducts = () => {
         {/* COUNT DOWN */}
         {deal && (
           <FadeUpMotionLayout>
-            <Countdown targetDate={deal?.ends_at || new Date().toISOString()} />
+            <Countdown targetDate={deal?.ends_at || new Date().toISOString()} format="HH:MM:SS"/>
           </FadeUpMotionLayout>
         )}
       </div>

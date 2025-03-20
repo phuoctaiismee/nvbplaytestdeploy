@@ -16,7 +16,7 @@ const Promotions = ({slice}: PromotionsProps): JSX.Element => {
     <Bounded
       data-slice-type={slice.slice_type}
       data-slice-variation={slice.variation}
-      className="relative h-[12rem] desktop:h-auto !px-0"
+      className="relative h-[12rem] desktop:h-auto py-4"
     >
       <PrismicNextImage
         field={slice.primary.background_image}

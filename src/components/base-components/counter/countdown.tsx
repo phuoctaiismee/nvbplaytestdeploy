@@ -1,8 +1,8 @@
 "use client";
 
-import {useEffect, useRef, useState} from "react";
-import {useAnimate} from "framer-motion";
-import {cn} from "@/lib/utils";
+import { useEffect, useRef, useState } from "react";
+import { useAnimate } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 type CountdownBoxProps = {
   targetDate: string;
@@ -13,6 +13,7 @@ type CountdownBoxProps = {
   unitClass?: string;
   separatorClass?: string;
   wrapperClass?: string;
+  format?: "DD:HH:MM:SS" | "DD:HH:MM" | "HH:MM:SS" | "HH:MM";
 };
 
 const SECOND = 1000;
@@ -29,7 +30,19 @@ const CountdownBox: React.FC<CountdownBoxProps> = ({
   unitClass = "text-xs font-light text-slate-500 md:text-sm lg:text-base",
   separatorClass = "mx-1",
   wrapperClass,
+  format = "DD:HH:MM:SS",
 }) => {
+  // Tách format thành danh sách các đơn vị cần hiển thị
+  const units = format.split(":") as ("DD" | "HH" | "MM" | "SS")[];
+
+  // Map unit từ format sang props
+  const unitMap = {
+    DD: { unit: "Day", text: "days" },
+    HH: { unit: "Hour", text: "hours" },
+    MM: { unit: "Minute", text: "minutes" },
+    SS: { unit: "Second", text: "seconds" },
+  } as const;
+
   return (
     <div className={containerClass}>
       <div
@@ -38,45 +51,22 @@ const CountdownBox: React.FC<CountdownBoxProps> = ({
           wrapperClass
         )}
       >
-        <CountdownBoxItem
-          targetDate={targetDate}
-          unit="Day"
-          text="days"
-          withUnit={withUnit}
-          itemClass={itemClass}
-          numberClass={numberClass}
-          unitClass={unitClass}
-        />
-        <span className={separatorClass}>:</span>
-        <CountdownBoxItem
-          targetDate={targetDate}
-          unit="Hour"
-          text="hours"
-          withUnit={withUnit}
-          itemClass={itemClass}
-          numberClass={numberClass}
-          unitClass={unitClass}
-        />
-        <span className={separatorClass}>:</span>
-        <CountdownBoxItem
-          targetDate={targetDate}
-          unit="Minute"
-          text="minutes"
-          withUnit={withUnit}
-          itemClass={itemClass}
-          numberClass={numberClass}
-          unitClass={unitClass}
-        />
-        <span className={separatorClass}>:</span>
-        <CountdownBoxItem
-          targetDate={targetDate}
-          unit="Second"
-          text="seconds"
-          withUnit={withUnit}
-          itemClass={itemClass}
-          numberClass={numberClass}
-          unitClass={unitClass}
-        />
+        {units.map((key, index) => (
+          <div key={key} className="flex items-center">
+            <CountdownBoxItem
+              targetDate={targetDate}
+              unit={unitMap[key].unit}
+              text={unitMap[key].text}
+              withUnit={withUnit}
+              itemClass={itemClass}
+              numberClass={numberClass}
+              unitClass={unitClass}
+            />
+            {index < units.length - 1 && (
+              <span className={separatorClass}>:</span>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -101,7 +91,7 @@ const CountdownBoxItem: React.FC<CountdownBoxItemProps> = ({
   numberClass,
   unitClass,
 }) => {
-  const {ref, time} = useTimer(targetDate, unit);
+  const { ref, time } = useTimer(targetDate, unit);
 
   return (
     <div className={cn("flex items-center", itemClass)}>
@@ -149,8 +139,8 @@ const useTimer = (
         if (ref.current) {
           await animate(
             ref.current,
-            {y: ["0%", "-50%"], opacity: [1, 0]},
-            {duration: 0.35}
+            { y: ["0%", "-50%"], opacity: [1, 0] },
+            { duration: 0.35 }
           );
         }
 
@@ -160,8 +150,8 @@ const useTimer = (
         if (ref.current) {
           await animate(
             ref.current,
-            {y: ["50%", "0%"], opacity: [0, 1]},
-            {duration: 0.35}
+            { y: ["50%", "0%"], opacity: [0, 1] },
+            { duration: 0.35 }
           );
         }
       }
@@ -177,7 +167,7 @@ const useTimer = (
     };
   }, [targetDate, unit, animate, ref]);
 
-  return {ref, time};
+  return { ref, time };
 };
 
 export default CountdownBox;

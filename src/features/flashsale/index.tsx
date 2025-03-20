@@ -1,27 +1,33 @@
 "use client";
-import React, {useEffect} from "react";
+import React, { useEffect } from "react";
 import ProductSaleList from "./components/product-sale-list";
-import {FlashsaleBanner, FlashsaleStars, NotRecord} from "@/assets/images";
-import {Lighting} from "@/assets/icons";
+import { FlashsaleBanner, FlashsaleStars, NotRecord } from "@/assets/images";
+import { Lighting } from "@/assets/icons";
 import CountdownBox from "@/components/base-components/counter/countdown";
-import {translate} from "@/utilities/translator";
-import {usePriceList} from "@/hooks/queries/price-list";
-import {setActive, setPriceList} from "@/stores/datas/price-list";
-import {useDispatch, useSelector} from "react-redux";
+import { translate } from "@/utilities/translator";
+import { usePriceList } from "@/hooks/queries/price-list";
+import {
+  setActive,
+  setCategories,
+  setPriceList,
+} from "@/stores/datas/price-list";
+import { useDispatch, useSelector } from "react-redux";
 import TimeoutAction from "@/components/particals/timeout";
 import EmptyItem from "@/components/base-components/cta/empty-item";
 import ProductSkeleton from "@/components/base-components/skeletons/product-skeleton";
-import {RootState} from "@/stores";
-import {FadeUpMotionLayout} from "@/layouts/component-layouts";
-import {cn} from "@/lib/utils";
+import { RootState } from "@/stores";
+import { FadeUpMotionLayout } from "@/layouts/component-layouts";
+import { cn } from "@/lib/utils";
+import { formatDate } from "date-fns";
+import Bounded from "@/components/base-components/containers/bounded";
 
 export const FlashSaleProductList = () => {
-  const {data: priceList, isLoading, isSuccess} = usePriceList();
+  const { data: priceList, isLoading, isSuccess } = usePriceList();
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (isSuccess && priceList && priceList.length > 0) {
-      dispatch(setPriceList(priceList));
+    if (isSuccess && priceList && priceList.price_lists.length > 0) {
+      dispatch(setPriceList(priceList.price_lists));
     }
   }, [isSuccess, priceList, dispatch]);
   return (
@@ -39,19 +45,21 @@ export const FlashSaleProductList = () => {
               />
             </div>
           }
-          onTickComponent={Array.from({length: 10}).map((_, index) => (
+          onTickComponent={Array.from({ length: 10 }).map((_, index) => (
             <ProductSkeleton key={index} />
           ))}
         />
       )}
-      {isSuccess && priceList && priceList?.length > 0 && <ProductSaleList />}
+      {isSuccess && priceList && priceList?.price_lists.length > 0 && (
+        <ProductSaleList />
+      )}
     </div>
   );
 };
 
 export const FlashSaleCountDown = () => {
   return (
-    <div className="flex items-center justify-center h-[56px] desktop:h-[68px] w-full bg-black-secondary">
+    <Bounded className="flex items-center justify-center h-[56px] desktop:h-[68px] w-full bg-black-secondary">
       <img
         src={FlashsaleStars.src}
         alt="img_stars"
@@ -68,29 +76,30 @@ export const FlashSaleCountDown = () => {
           </div>
         </div>
         <CountdownBox
+          format="HH:MM:SS"
           targetDate={"2025-01-30T23:59:59"}
           itemClass="rounded-lg z-[1]"
           numberClass="relative text-xs h-[28px] w-[28px] desktop:h-[44px] desktop:w-[44px] desktop:text-lg overflow-hidden before:absolute before:h-[7px] before:w-[7px] before:bottom-0 before:z-[2] before:left-0 before:bg-txtthird before:rounded-[2px]"
         />
       </div>
-    </div>
+    </Bounded>
   );
 };
 
 export const FlashSaleBanner = () => {
   return (
-    <div className="w-full bg-gray-primary overflow-hidden rounded-t-lg">
+    <Bounded className="w-full bg-gray-primary overflow-hidden rounded-t-lg">
       <img
         src={FlashsaleBanner.src}
         alt="img_banner"
         className="w-full h-full object-cover"
       />
-    </div>
+    </Bounded>
   );
 };
 
 export const FlashSaleTab = () => {
-  const {priceList, active} = useSelector(
+  const { priceList, active } = useSelector(
     (state: RootState) => state.price_list
   );
   const dispatch = useDispatch();
@@ -101,52 +110,49 @@ export const FlashSaleTab = () => {
   }, [priceList]);
   const handleSetActive = (id: string) => {
     dispatch(setActive(id));
+    const priceListActive = priceList?.find((item) => item.id === id);
+    dispatch(setCategories(priceListActive?.categories || []));
   };
   return (
-    <div className="h-[58px] desktop:h-[73px] w-full bg-white flex items-center justify-center">
-      <div className="container h-full mx-auto w-full grid grid-cols-3">
+    <Bounded className="h-[58px] desktop:h-[73px] w-full bg-white flex items-center justify-center">
+      <div className="container h-full mx-auto w-full flex items-center justify-center">
         {priceList && (
           <>
-            {priceList.map((item, index) => (
-              <FadeUpMotionLayout key={index}>
-                <div
+            {priceList?.map((item, index) => (
+              <div
+                key={index}
+                className={cn(
+                  "w-full h-full  border-b-2  border-b-transparent from-txtthird/20 to-transparent flex flex-col items-center justify-center",
+                  active === item?.id && "border-b-txtthird bg-gradient-to-t"
+                )}
+                onClick={() => handleSetActive(item.id)}
+              >
+                <span
                   className={cn(
-                    "w-full h-full bg-gradient-to-t border-b-2 border-b-transparent from-txtthird/20 to-transparent flex flex-col items-center justify-center",
-                    active === item?.id && "border-b-txtthird"
+                    "text-txtthird font-bold text-base desktop:text-2xl",
+                    {
+                      "text-txtthird": active === item?.id,
+                      "text-gray-600 opacity-50": active !== item?.id,
+                    }
                   )}
-                  onClick={() => handleSetActive(item.id)}
                 >
-                  <span className="text-txtthird font-bold text-base desktop:text-2xl">
-                    10:00
-                  </span>
-                  <span className="font-medium text-xs desktop:text-sm text-[#6C2F00]">
-                    {item.status === "active"
-                      ? translate("taking_place")
-                      : translate("upcoming")}
-                  </span>
-                </div>
-              </FadeUpMotionLayout>
+                  {formatDate(item?.starts_at || new Date(), "HH:mm")}
+                </span>
+                <span
+                  className={cn("font-medium text-xs desktop:text-sm ", {
+                    "text-[#6C2F00]": active === item?.id,
+                    "text-gray-600 opacity-50": active !== item?.id,
+                  })}
+                >
+                  {item.status === "active"
+                    ? translate("taking_place")
+                    : translate("upcoming")}
+                </span>
+              </div>
             ))}
           </>
         )}
-
-        <div className="w-full bg-white flex flex-col items-center justify-center">
-          <span className="text-gray-seventh font-bold text-base desktop:text-2xl">
-            13:00
-          </span>
-          <span className="font-medium text-xs desktop:text-sm text-[#c4c4cf]">
-            {translate("upcoming")}
-          </span>
-        </div>
-        <div className="w-full bg-white flex flex-col items-center justify-center">
-          <span className="text-gray-seventh font-bold text-base desktop:text-2xl">
-            13:00
-          </span>
-          <span className="font-medium text-xs desktop:text-sm text-[#c4c4cf]">
-            {translate("upcoming")}
-          </span>
-        </div>
       </div>
-    </div>
+    </Bounded>
   );
 };

@@ -114,7 +114,7 @@ const CategoriesCarousel = () => {
       </CarouselItem>
     ));
     return (
-      <Carousel opts={{ align: "start", dragFree: true }}>
+      <Carousel opts={{ align: "start", dragFree: true, loop: true }}>
         <CarouselContent>{items}</CarouselContent>
         <CarouselPrevious className="hidden desktop:inline-flex absolute -left-5 text-primary" />
         <CarouselNext className="hidden desktop:inline-flex absolute -right-5 text-primary" />
